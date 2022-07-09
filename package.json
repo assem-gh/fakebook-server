@@ -2,10 +2,14 @@
   "name": "fakebook-backend",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "asem259 <alghabra.asem@gmail.com>",
+  "author": "asem259",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --watch './**/*.ts' --exec ts-node --files src/server.ts"
+    "dev": "nodemon --watch './**/*.ts' --exec ts-node --files src/server.ts",
+    "typeorm": "npx typeorm-ts-node-esm  -d src/data-source.ts ",
+    "migration:gen": "sh -c 'yarn  typeorm -- migration:generate src/migrations/$0'",
+    "migration:run": "yarn typeorm migration:run",
+    "migration:show": "yarn typeorm migration:show"
   },
   "keywords": [],
   "devDependencies": {
