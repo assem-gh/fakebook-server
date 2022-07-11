@@ -5,6 +5,7 @@ import {
   Index,
   UpdateDateColumn,
   CreateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 
 type Gender = 'male' | 'female' | 'other';
@@ -51,7 +52,7 @@ export class UserEntity {
   bio: string;
 
   @Column({ type: 'date' })
-  birthDay: Date;
+  birthday: Date;
 
   @CreateDateColumn({ name: 'created_at', nullable: true })
   createdAt: Date;
