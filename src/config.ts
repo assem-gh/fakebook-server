@@ -13,4 +13,12 @@ export const db = {
 export const server = {
   PORT: process.env.PORT || '5000',
   JWT_SECRET: process.env.JWT_SECRET || 'S$E#cRe?T',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
+};
+
+export const mailer = {
+  EMAIL: process.env.EMAIL,
+  ID: process.env.MAIL_ID,
+  SECRET: process.env.MAIL_SECRET,
+  REFRESH_TOKEN: process.env.MAIL_REFRESH,
 };

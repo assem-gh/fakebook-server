@@ -30,4 +30,9 @@ const generateToken = (id: string, duration = '21d'): string => {
   });
 };
 
-export default { createUser, generateToken };
+const generateVerificationUrl = (id: string) => {
+  const token = generateToken(id, '30m');
+  return `${server.CLIENT_URL}/${token}`;
+};
+
+export default { createUser, generateToken, generateVerificationUrl };
