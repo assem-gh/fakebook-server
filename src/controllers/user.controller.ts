@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { NewUserSchema } from '../schemas/user.schema';
+import { LoginUserSchema, NewUserSchema } from '../schemas/user.schema';
 import mailService, { EmailTemplate } from '../services/mail.service';
 import userService from '../services/user.service';
 
@@ -23,6 +23,23 @@ export const signup = async (
     );
 
     res.status(200).send({ ...newUser, jwtToken });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const signin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const credentials = LoginUserSchema.parse(req.body);
+
+    const user = await userService.login(credentials);
+    const jwtToken = userService.generateToken(user.id);
+
+    res.status(200).send({ ...user, jwtToken });
   } catch (err) {
     next(err);
   }

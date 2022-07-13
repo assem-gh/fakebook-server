@@ -37,7 +37,9 @@ export const NewUserSchema = z.object({
         { message: 'Age must be more than 13 years' }
       )
   ),
-  gender: z.enum(['male', 'female', 'other']),
+  gender: z.enum(['male', 'female', 'other'], {
+    required_error: 'Gender is required',
+  }),
 });
 
 export const LoginUserSchema = NewUserSchema.pick({
@@ -46,3 +48,5 @@ export const LoginUserSchema = NewUserSchema.pick({
 });
 
 export type NewUser = z.infer<typeof NewUserSchema>;
+
+export type Credentials = z.infer<typeof LoginUserSchema>;

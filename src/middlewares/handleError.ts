@@ -14,24 +14,22 @@ const handleError = (
 ) => {
   if (err instanceof ZodError) {
     const { status, message } = handleZodErrors(err);
-
     res.status(status).send({ message });
-  } else if (err instanceof TypeORMError) {
-    const { status, message } = handleTypeormErrors(err);
-
-    res.status(status).send({ message });
-  } else {
-    res.status(500).send({
-      message: 'Server Error',
-    });
   }
+  if (err instanceof TypeORMError) {
+    const { status, message } = handleTypeormErrors(err);
+    res.status(status).send({ message });
+  }
+  res.status(err.status || 500).send({
+    message: err.message || 'Server Error',
+  });
 };
 
 export default handleError;
 
 const handleTypeormErrors = (err: TypeORMError): HttpError => {
   if (err instanceof QueryFailedError) {
-    if (err.driverError.code === 23505)
+    if (err.driverError.code === '23505')
       return {
         name: err.name,
         status: 409,
