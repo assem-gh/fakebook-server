@@ -6,12 +6,12 @@ dayjs.extend(customParseFormat);
 
 export const NewUserSchema = z.object({
   firstName: z
-    .string()
+    .string({ required_error: 'First name is required' })
     .min(3, { message: 'First Name must be at least 3 characters long' }),
   lastName: z
-    .string()
+    .string({ required_error: 'Last name is required' })
     .min(3, { message: 'Last Name must be at least 3 characters long' }),
-  email: z.string().email(),
+  email: z.string({ required_error: 'Email is required' }).email(),
   password: z
     .string()
     .min(6, { message: 'Password must contain at least 6 characters' }),
@@ -47,6 +47,15 @@ export const LoginUserSchema = NewUserSchema.pick({
   password: true,
 });
 
+export const ForgotPasswordSchema = LoginUserSchema.pick({ email: true });
+
+export const ResetPasswordSchema = z.object({
+  newPassword: z.string({ required_error: 'Password is required' }),
+  token: z.string(),
+});
+
 export type NewUser = z.infer<typeof NewUserSchema>;
 
 export type Credentials = z.infer<typeof LoginUserSchema>;
+
+export type ResetPayload = z.infer<typeof ResetPasswordSchema>;

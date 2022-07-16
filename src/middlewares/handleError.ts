@@ -1,7 +1,5 @@
-import { error } from 'console';
 import { Request, Response, NextFunction } from 'express';
 import { QueryFailedError, TypeORMError } from 'typeorm';
-
 import { ZodError } from 'zod';
 
 import { HttpError } from '../utils/HttpError';
@@ -14,15 +12,18 @@ const handleError = (
 ) => {
   if (err instanceof ZodError) {
     const { status, message } = handleZodErrors(err);
-    res.status(status).send({ message });
+    return res.status(status).send({ message });
   }
   if (err instanceof TypeORMError) {
     const { status, message } = handleTypeormErrors(err);
-    res.status(status).send({ message });
+    return res.status(status).send({ message });
   }
-  res.status(err.status || 500).send({
-    message: err.message || 'Server Error',
-  });
+  if (err instanceof HttpError) {
+    return res.status(err.status).send({
+      message: err.message,
+    });
+  }
+  res.status(500).send({ message: 'Server Error' });
 };
 
 export default handleError;
@@ -37,9 +38,8 @@ const handleTypeormErrors = (err: TypeORMError): HttpError => {
       };
   }
 
-  return {} as HttpError;
+  return { name: err.name, status: 400, message: err.message };
 };
-
 const handleZodErrors = (err: ZodError): HttpError => {
   return {
     name: err.name,

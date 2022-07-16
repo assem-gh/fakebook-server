@@ -1,11 +1,11 @@
 import { hash, compare } from 'bcrypt';
-import { sign } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 
 import { AppDataSource } from '../data-source';
-import { UserEntity } from '../entities/user.entity';
-import { Credentials, NewUser } from '../schemas/user.schema';
-import { server } from '../config';
 import { HttpError } from '../utils/HttpError';
+import { UserEntity } from '../entities/user.entity';
+import { Credentials, NewUser, ResetPayload } from '../schemas/user.schema';
+import { server } from '../config';
 import utils from '../utils/functions';
 
 const userRepository = AppDataSource.getRepository(UserEntity);
@@ -42,7 +42,10 @@ const login = async ({
   return rest;
 };
 
-const generateToken = (id: string, duration = '21d'): string => {
+const generateToken = (
+  id: string,
+  duration: string | number = '21d'
+): string => {
   return sign({ id }, server.JWT_SECRET, {
     expiresIn: duration,
   });
@@ -53,4 +56,36 @@ const generateVerificationUrl = (id: string) => {
   return `${server.CLIENT_URL}/${token}`;
 };
 
-export default { createUser, login, generateToken, generateVerificationUrl };
+const generateResetUrl = async (email: string) => {
+  const user = await userRepository.findOneBy({
+    email: email as string,
+  });
+
+  if (!user)
+    throw new HttpError(401, 'Invalid Email, please try again later. ');
+
+  const resetToken = generateToken(user.id, 60 * 30);
+  const url = `${server.CLIENT_URL}/reset-password/${resetToken}`;
+
+  return url;
+};
+
+const updatePassword = async ({ token, newPassword }: ResetPayload) => {
+  const { id } = verify(token, server.JWT_SECRET) as JwtPayload;
+
+  const user = await userRepository.findOneBy({ id });
+  if (!user) throw new HttpError(401, 'User not found');
+
+  user.password = await hash(newPassword, 12);
+  const { password, ...savedUser } = await userRepository.save(user);
+  return savedUser;
+};
+
+export default {
+  createUser,
+  login,
+  generateToken,
+  generateVerificationUrl,
+  generateResetUrl,
+  updatePassword,
+};
