@@ -8,7 +8,7 @@ import { Credentials, NewUser, ResetPayload } from '../schemas/user.schema';
 import { server } from '../config';
 import utils from '../utils/functions';
 
-const userRepository = AppDataSource.getRepository(UserEntity);
+export const userRepository = AppDataSource.getRepository(UserEntity);
 
 const createUser = async (
   newUserData: NewUser

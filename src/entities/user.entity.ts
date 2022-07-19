@@ -5,8 +5,9 @@ import {
   Index,
   UpdateDateColumn,
   CreateDateColumn,
-  BeforeInsert,
+  OneToMany,
 } from 'typeorm';
+import { PostEntity } from './post.entity';
 
 type Gender = 'male' | 'female' | 'other';
 
@@ -53,6 +54,9 @@ export class UserEntity {
 
   @Column({ type: 'date' })
   birthday: Date;
+
+  @OneToMany(() => PostEntity, (post) => post.owner)
+  posts: PostEntity[];
 
   @CreateDateColumn({ name: 'created_at', nullable: true })
   createdAt: Date;

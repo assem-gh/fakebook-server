@@ -22,3 +22,9 @@ export const mailer = {
   SECRET: process.env.MAIL_SECRET,
   REFRESH_TOKEN: process.env.MAIL_REFRESH,
 };
+
+export const cloudinary = {
+  NAME: process.env.CLOUDINARY_NAME,
+  KEY: process.env.CLOUDINARY_KEY,
+  SECRET: process.env.CLOUDINARY_SECRET,
+};
