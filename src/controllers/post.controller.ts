@@ -11,9 +11,8 @@ export const createPost = async (
 ) => {
   try {
     const { content } = CreatePostSchema.parse(req.body);
-    const owner = req.user;
+    const owner = req.user.id;
     const images = await cloudinaryService.upload(req.files, owner);
-
     const post = await postService.createPost({ content, owner, images });
 
     res.status(200).send(post);
