@@ -26,9 +26,9 @@ export class PostEntity {
   @JoinColumn({ name: 'owner_id' })
   owner: UserEntity;
 
-  @CreateDateColumn({ name: 'created_at', nullable: true })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', nullable: true })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
