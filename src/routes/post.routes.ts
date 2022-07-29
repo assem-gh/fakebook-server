@@ -1,10 +1,20 @@
 import { Router } from 'express';
 
-import { createPost, getAll } from '../controllers/post.controller';
+import {
+  createPost,
+  getAll,
+  likePost,
+  updatePost,
+} from '../controllers/post.controller';
 import { verifyToken } from '../middlewares/VerifyToken';
 
 const postRouter = Router();
 
-postRouter.post('/', verifyToken, createPost).get('/', getAll);
+postRouter.get('/', getAll).post('/', verifyToken, createPost);
+
+postRouter
+  .route('/:postId')
+  .patch(verifyToken, likePost)
+  .put(verifyToken, updatePost);
 
 export default postRouter;

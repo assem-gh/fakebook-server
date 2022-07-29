@@ -11,8 +11,8 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(fileUpload({ parseNested: true }));
 app.use(morgan('dev'));
-app.use(fileUpload());
 
 app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);

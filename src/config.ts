@@ -10,7 +10,7 @@ export const db = {
   PORT: Number(process.env.DB_PORT) || 5432,
 };
 
-export const server = {
+export const serverConfig = {
   PORT: process.env.PORT || '5000',
   JWT_SECRET: process.env.JWT_SECRET || 'S$E#cRe?T',
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',

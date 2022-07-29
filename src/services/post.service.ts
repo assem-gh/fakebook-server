@@ -2,39 +2,40 @@ import { LessThan } from 'typeorm';
 
 import { AppDataSource } from '../data-source';
 import { HttpError } from '../utils/HttpError';
-import { NewPost } from '../schemas/post.schema';
+import { NewPost, UpdatePost } from '../schemas/post.schema';
 import { PostEntity } from '../entities/post.entity';
-import { userRepository } from './user.service';
+import userService from './user.service';
 
 export const postRepository = AppDataSource.getRepository(PostEntity);
 
 const createPost = async ({ owner, ...postData }: NewPost) => {
   const newPost = postRepository.create(postData);
 
-  const user = await userRepository.findOneBy({
-    id: owner,
-  });
-  if (!user) throw new HttpError(400, 'User Not found');
+  const user = await userService.findUser(owner);
 
-  newPost.owner = owner as any;
+  newPost.owner = user;
   const post = await postRepository.save(newPost);
 
   return post;
+};
+
+const userFields = {
+  id: true,
+  profileImage: true,
+  userName: true,
+  firstName: true,
+  lastName: true,
 };
 
 const getAllPosts = async (before: Date, limit: number) => {
   const posts = await postRepository.find({
     relations: {
       owner: true,
+      likes: true,
     },
     select: {
-      owner: {
-        id: true,
-        profileImage: true,
-        userName: true,
-        firstName: true,
-        lastName: true,
-      },
+      owner: userFields,
+      likes: userFields,
     },
     where: { updatedAt: LessThan(before) },
     take: limit,
@@ -61,4 +62,46 @@ const getFirstPost = async () => {
   return first;
 };
 
-export default { createPost, getAllPosts };
+const updatePost = async ({ content, images, id }: UpdatePost) => {
+  const post = await findPost(id);
+  post.images = images;
+  post.content = content;
+  await postRepository.save(post);
+  return post;
+};
+
+const likePost = async (userId: string, postId: string) => {
+  const user = await userService.findUser(userId);
+
+  const post = await findPost(postId);
+  if (post?.likes.some((u) => u.id === userId)) {
+    post.likes = post.likes.filter((u) => u.id !== userId);
+  } else {
+    post?.likes.push(user);
+  }
+  await postRepository.save(post);
+
+  return post;
+};
+
+const findPost = async (id: string) => {
+  const post = await postRepository.findOne({
+    where: { id },
+    relations: { owner: true, likes: true },
+    select: {
+      owner: userFields,
+      likes: userFields,
+    },
+  });
+
+  if (!post) throw new HttpError(401, 'Post not found');
+  return post;
+};
+
+export default {
+  createPost,
+  getAllPosts,
+  likePost,
+  findPost,
+  updatePost,
+};

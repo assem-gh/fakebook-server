@@ -5,7 +5,7 @@ import { AppDataSource } from '../data-source';
 import { HttpError } from '../utils/HttpError';
 import { UserEntity } from '../entities/user.entity';
 import { Credentials, NewUser, ResetPayload } from '../schemas/user.schema';
-import { server } from '../config';
+import { serverConfig } from '../config';
 import utils from '../utils/functions';
 
 export const userRepository = AppDataSource.getRepository(UserEntity);
@@ -46,14 +46,14 @@ const generateToken = (
   id: string,
   duration: string | number = '21d'
 ): string => {
-  return sign({ id }, server.JWT_SECRET, {
+  return sign({ id }, serverConfig.JWT_SECRET, {
     expiresIn: duration,
   });
 };
 
 const generateVerificationUrl = (id: string) => {
   const token = generateToken(id, '2d');
-  return `${server.CLIENT_URL}/${token}`;
+  return `${serverConfig.CLIENT_URL}/${token}`;
 };
 
 const generateResetUrl = async (email: string) => {
@@ -65,13 +65,13 @@ const generateResetUrl = async (email: string) => {
     throw new HttpError(401, 'Invalid Email, please try again later. ');
 
   const resetToken = generateToken(user.id, 60 * 30);
-  const url = `${server.CLIENT_URL}/reset-password/${resetToken}`;
+  const url = `${serverConfig.CLIENT_URL}/reset-password/${resetToken}`;
 
   return url;
 };
 
 const updatePassword = async ({ token, newPassword }: ResetPayload) => {
-  const { id } = verify(token, server.JWT_SECRET) as JwtPayload;
+  const { id } = verify(token, serverConfig.JWT_SECRET) as JwtPayload;
 
   const user = await userRepository.findOneBy({ id });
   if (!user) throw new HttpError(401, 'User not found');
@@ -81,6 +81,13 @@ const updatePassword = async ({ token, newPassword }: ResetPayload) => {
   return savedUser;
 };
 
+const findUser = async (id: string) => {
+  const user = await userRepository.findOneBy({ id });
+
+  if (!user) throw new HttpError(401, 'User not found');
+  return user;
+};
+
 export default {
   createUser,
   login,
@@ -88,4 +95,5 @@ export default {
   generateVerificationUrl,
   generateResetUrl,
   updatePassword,
+  findUser,
 };

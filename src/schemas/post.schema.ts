@@ -8,9 +8,22 @@ export const CreatePostSchema = z.object({
   content: z.string(),
 });
 
+export const UpdatePostSchema = CreatePostSchema.extend({
+  links: z.preprocess((arg) => {
+    if (!arg) return [];
+    return arg;
+  }, z.string().array()),
+  id: z.string(),
+});
+
 export interface NewPost {
   content: string;
   owner: string;
+  images: string[];
+}
+export interface UpdatePost {
+  content: string;
+  id: string;
   images: string[];
 }
 

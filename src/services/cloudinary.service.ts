@@ -11,9 +11,9 @@ v2.config({
 });
 
 const upload = (files: FileArray | undefined, userId: string) => {
-  if (!files) return Promise.resolve([]);
+  if (!files?.images) return Promise.resolve([]);
 
-  const images = Object.values(files).map(
+  const images = Object.values(files.images).map(
     (file: UploadedFile) =>
       new Promise<string>((resolve, reject) => {
         v2.uploader

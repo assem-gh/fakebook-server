@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { PostEntity } from './post.entity';
 
@@ -57,6 +59,16 @@ export class UserEntity {
 
   @OneToMany(() => PostEntity, (post) => post.owner)
   posts: PostEntity[];
+
+  @ManyToMany(() => PostEntity, (post) => post.likes)
+  favoritePosts: PostEntity[];
+
+  @ManyToMany(() => PostEntity, (post) => post.saved)
+  @JoinTable({
+    joinColumn: { name: 'saved_posts', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'saved', referencedColumnName: 'id' },
+  })
+  savedPosts: PostEntity[];
 
   @CreateDateColumn({ name: 'created_at', nullable: true })
   createdAt: Date;

@@ -1,16 +1,16 @@
 import { AppDataSource } from './data-source';
 
-import { server } from './config';
+import { serverConfig } from './config';
 import app from './app';
 
 const main = async () => {
   try {
     await AppDataSource.initialize();
-    app.listen(server.PORT, () =>
-      console.log(`🚀 Server start on port ${server.PORT} `)
+    app.listen(serverConfig.PORT, () =>
+      console.log(`🚀 Server start on port ${serverConfig.PORT} `)
     );
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
   }
 };
 
