@@ -8,7 +8,9 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
+import { Comment } from './Comment.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('post')
@@ -37,6 +39,9 @@ export class PostEntity {
 
   @ManyToMany(() => UserEntity, (user) => user.savedPosts)
   saved: UserEntity[];
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

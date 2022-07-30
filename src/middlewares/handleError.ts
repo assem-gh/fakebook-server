@@ -10,6 +10,8 @@ const handleError = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(err);
+
   if (err instanceof ZodError) {
     const { status, message } = handleZodErrors(err);
     return res.status(status).send({ message });

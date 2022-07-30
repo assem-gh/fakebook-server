@@ -9,6 +9,7 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
+import { Comment } from './Comment.entity';
 import { PostEntity } from './post.entity';
 
 type Gender = 'male' | 'female' | 'other';
@@ -69,6 +70,9 @@ export class UserEntity {
     inverseJoinColumn: { name: 'saved', referencedColumnName: 'id' },
   })
   savedPosts: PostEntity[];
+
+  @OneToMany(() => Comment, (comment) => comment.owner)
+  comments: Comment[];
 
   @CreateDateColumn({ name: 'created_at', nullable: true })
   createdAt: Date;

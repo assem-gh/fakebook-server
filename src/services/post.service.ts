@@ -13,13 +13,14 @@ const createPost = async ({ owner, ...postData }: NewPost) => {
 
   const user = await userService.findUser(owner);
 
-  newPost.owner = user;
+  newPost.owner = owner as any;
+  newPost.comments = [];
   const post = await postRepository.save(newPost);
 
   return post;
 };
 
-const userFields = {
+const ownerFields = {
   id: true,
   profileImage: true,
   userName: true,
@@ -27,15 +28,21 @@ const userFields = {
   lastName: true,
 };
 
+const commentFields = {
+  owner: ownerFields,
+  id: true,
+  content: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 const getAllPosts = async (before: Date, limit: number) => {
   const posts = await postRepository.find({
-    relations: {
-      owner: true,
-      likes: true,
-    },
+    relations: ['owner', 'likes', 'comments', 'comments.owner'],
     select: {
-      owner: userFields,
-      likes: userFields,
+      owner: ownerFields,
+      likes: ownerFields,
+      comments: commentFields,
     },
     where: { updatedAt: LessThan(before) },
     take: limit,
@@ -87,10 +94,11 @@ const likePost = async (userId: string, postId: string) => {
 const findPost = async (id: string) => {
   const post = await postRepository.findOne({
     where: { id },
-    relations: { owner: true, likes: true },
+    relations: ['owner', 'likes', 'comments', 'comments.owner'],
     select: {
-      owner: userFields,
-      likes: userFields,
+      owner: ownerFields,
+      likes: ownerFields,
+      comments: commentFields,
     },
   });
 

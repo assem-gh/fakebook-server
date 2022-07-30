@@ -6,6 +6,7 @@ import fileUpload from 'express-fileupload';
 import handleError from './middlewares/handleError';
 import postRouter from './routes/post.routes';
 import userRouter from './routes/user.routes';
+import commentRouter from './routes/comment.routes';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(morgan('dev'));
 
 app.use('/api/users', userRouter);
 app.use('/api/posts', postRouter);
+app.use('/api/comments', commentRouter);
 
 app.use(handleError);
 

@@ -4,7 +4,11 @@ import {
   Column,
   UpdateDateColumn,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { PostEntity } from './post.entity';
+import { UserEntity } from './user.entity';
 
 @Entity()
 export class Comment {
@@ -12,13 +16,15 @@ export class Comment {
   id: string;
 
   @Column()
-  owner: string;
+  content: string;
 
-  @Column()
-  post: string;
+  @ManyToOne(() => UserEntity, (user) => user.comments)
+  @JoinColumn({ name: 'owner_id' })
+  owner: UserEntity;
 
-  @Column()
-  body: string;
+  @ManyToOne(() => PostEntity, (post) => post.comments)
+  @JoinColumn({ name: 'post_id' })
+  post: PostEntity;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

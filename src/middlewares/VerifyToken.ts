@@ -12,7 +12,7 @@ export const verifyToken = async (
 ) => {
   try {
     const token = req.headers['authorization']?.replace('Bearer ', '');
-    if (!token) throw new HttpError(401, 'Access Denied');
+    if (!token) throw new HttpError(401, 'Unauthorized, Access is denied ');
 
     const { id } = jwt.verify(token, serverConfig.JWT_SECRET) as { id: string };
     const verifiedUser = await userRepository.findOneBy({ id });
@@ -21,6 +21,6 @@ export const verifyToken = async (
     req.user = { id: verifiedUser.id };
     next();
   } catch (err) {
-    next(err);
+    next(new HttpError(401, 'Unauthorized, Access is denied'));
   }
 };
