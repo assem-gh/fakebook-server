@@ -18,13 +18,16 @@ export class Comment {
   @Column()
   content: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.comments)
+  @ManyToOne(() => UserEntity, (user) => user.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner_id' })
   owner: UserEntity;
 
-  @ManyToOne(() => PostEntity, (post) => post.comments)
+  @ManyToOne(() => PostEntity, (post) => post.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'post_id' })
   post: PostEntity;
+
+  @Column({ name: 'post_id' })
+  postId: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

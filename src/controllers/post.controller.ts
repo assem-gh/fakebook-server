@@ -7,6 +7,7 @@ import {
 } from '../schemas/post.schema';
 import cloudinaryService from '../services/cloudinary.service';
 import postService from '../services/post.service';
+import userService from '../services/user.service';
 
 export const createPost = async (
   req: Request,
@@ -77,6 +78,39 @@ export const likePost = async (
 
     const post = await postService.likePost(userId, postId);
     res.status(200).send(post);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deletePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { postId } = req.params;
+
+    await postService.deletePost(postId);
+
+    res.status(200).end();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const savePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { postId } = req.params;
+    const user = req.user;
+
+    const savedPosts = await userService.savePost(postId, user.id);
+
+    res.status(200).send(savedPosts);
   } catch (err) {
     next(err);
   }

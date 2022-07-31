@@ -9,6 +9,7 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  RelationId,
 } from 'typeorm';
 import { Comment } from './Comment.entity';
 import { UserEntity } from './user.entity';
@@ -42,6 +43,9 @@ export class PostEntity {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @RelationId((post: PostEntity) => post.comments)
+  commentsIds: string[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -20,7 +20,7 @@ const createPost = async ({ owner, ...postData }: NewPost) => {
   return post;
 };
 
-const ownerFields = {
+export const ownerFields = {
   id: true,
   profileImage: true,
   userName: true,
@@ -28,21 +28,12 @@ const ownerFields = {
   lastName: true,
 };
 
-const commentFields = {
-  owner: ownerFields,
-  id: true,
-  content: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
 const getAllPosts = async (before: Date, limit: number) => {
   const posts = await postRepository.find({
-    relations: ['owner', 'likes', 'comments', 'comments.owner'],
+    relations: ['owner', 'likes'],
     select: {
       owner: ownerFields,
       likes: ownerFields,
-      comments: commentFields,
     },
     where: { updatedAt: LessThan(before) },
     take: limit,
@@ -91,14 +82,19 @@ const likePost = async (userId: string, postId: string) => {
   return post;
 };
 
+const deletePost = async (postId: string) => {
+  const post = await findPost(postId);
+
+  await postRepository.delete(post.id);
+};
+
 const findPost = async (id: string) => {
   const post = await postRepository.findOne({
     where: { id },
-    relations: ['owner', 'likes', 'comments', 'comments.owner'],
+    relations: ['owner', 'likes'],
     select: {
       owner: ownerFields,
       likes: ownerFields,
-      comments: commentFields,
     },
   });
 
@@ -112,4 +108,5 @@ export default {
   likePost,
   findPost,
   updatePost,
+  deletePost,
 };

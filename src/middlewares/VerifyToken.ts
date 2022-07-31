@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { HttpError } from '../utils/HttpError';
 import { serverConfig } from '../config';
-import { userRepository } from '../services/user.service';
+import userService from '../services/user.service';
 
 export const verifyToken = async (
   req: Request,
@@ -15,10 +15,9 @@ export const verifyToken = async (
     if (!token) throw new HttpError(401, 'Unauthorized, Access is denied ');
 
     const { id } = jwt.verify(token, serverConfig.JWT_SECRET) as { id: string };
-    const verifiedUser = await userRepository.findOneBy({ id });
-    if (!verifiedUser) throw new HttpError(401, 'User Not  found');
+    const verifiedUser = await userService.findUser(id);
 
-    req.user = { id: verifiedUser.id };
+    req.user = verifiedUser;
     next();
   } catch (err) {
     next(new HttpError(401, 'Unauthorized, Access is denied'));

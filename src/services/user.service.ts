@@ -7,6 +7,7 @@ import { UserEntity } from '../entities/user.entity';
 import { Credentials, NewUser, ResetPayload } from '../schemas/user.schema';
 import { serverConfig } from '../config';
 import utils from '../utils/functions';
+import postService from './post.service';
 
 export const userRepository = AppDataSource.getRepository(UserEntity);
 
@@ -21,6 +22,7 @@ const createUser = async (
     ...data,
     userName,
     password: hashedPassword,
+    savedPosts: [],
   });
   const { password: pass, ...user } = newUser;
   return user;
@@ -88,6 +90,27 @@ const findUser = async (id: string) => {
   return user;
 };
 
+const savePost = async (postId: string, userId: string) => {
+  const post = await postService.findPost(postId);
+  const user = (await userRepository.findOne({
+    where: { id: userId },
+    relations: ['savedPosts'],
+    select: {
+      id: true,
+    },
+  })) as UserEntity;
+
+  if (user.savedPosts.some((p) => p.id === post.id)) {
+    user.savedPosts = user.savedPosts.filter((p) => p.id !== postId);
+  } else {
+    user.savedPosts.push({ id: post.id } as any);
+  }
+
+  await userRepository.save(user);
+
+  return user.savedPosts.map((p) => p.id);
+};
+
 export default {
   createUser,
   login,
@@ -96,4 +119,5 @@ export default {
   generateResetUrl,
   updatePassword,
   findUser,
+  savePost,
 };

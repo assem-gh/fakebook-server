@@ -4,7 +4,6 @@ import { DataSource } from 'typeorm';
 import { db } from './config';
 import { Comment } from './entities/Comment.entity';
 import { PostEntity } from './entities/post.entity';
-import { PostSubscriber } from './entities/post.subscriber';
 import { UserEntity } from './entities/user.entity';
 
 export const AppDataSource = new DataSource({
@@ -18,5 +17,5 @@ export const AppDataSource = new DataSource({
   logging: false,
   entities: [UserEntity, PostEntity, Comment],
   migrations: [process.cwd() + '/src/migrations/*.ts'],
-  subscribers: [PostSubscriber],
+  subscribers: [],
 });
