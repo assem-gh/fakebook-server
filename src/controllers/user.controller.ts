@@ -11,6 +11,22 @@ import {
 import mailService, { EmailTemplate } from '../services/mail.service';
 import userService from '../services/user.service';
 
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+
+    const jwtToken = userService.generateToken(user!.id);
+
+    res.status(200).send({ ...user, jwtToken });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const signup = async (
   req: Request,
   res: Response,

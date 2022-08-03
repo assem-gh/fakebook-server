@@ -15,7 +15,7 @@ export const verifyToken = async (
     if (!token) throw new HttpError(401, 'Unauthorized, Access is denied ');
 
     const { id } = jwt.verify(token, serverConfig.JWT_SECRET) as { id: string };
-    const verifiedUser = await userService.findUser(id);
+    const { password, ...verifiedUser } = await userService.findUser(id);
 
     req.user = verifiedUser;
     next();

@@ -27,7 +27,7 @@ export const createComment = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id as string;
     const { content, postId } = CreateCommentSchema.parse(req.body);
 
     const comment = await commentService.createComment({

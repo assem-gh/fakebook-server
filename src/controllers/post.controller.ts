@@ -16,7 +16,7 @@ export const createPost = async (
 ) => {
   try {
     const { content } = CreatePostSchema.parse(req.body);
-    const owner = req.user.id;
+    const owner = req.user?.id as string;
     const images = await cloudinaryService.upload(req.files, owner);
     const post = await postService.createPost({ content, owner, images });
 
@@ -49,7 +49,7 @@ export const updatePost = async (
 ) => {
   try {
     const { content, links, id } = UpdatePostSchema.parse(req.body);
-    const owner = req.user.id;
+    const owner = req.user?.id as string;
 
     const uploadedImages = await cloudinaryService.upload(req.files, owner);
 
@@ -73,10 +73,10 @@ export const likePost = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id as string;
     const { postId } = req.params;
-
     const post = await postService.likePost(userId, postId);
+
     res.status(200).send(post);
   } catch (err) {
     next(err);
@@ -106,9 +106,9 @@ export const savePost = async (
 ) => {
   try {
     const { postId } = req.params;
-    const user = req.user;
+    const userId = req.user?.id as string;
 
-    const savedPosts = await userService.savePost(postId, user.id);
+    const savedPosts = await userService.savePost(postId, userId);
 
     res.status(200).send(savedPosts);
   } catch (err) {

@@ -10,6 +10,7 @@ import {
   JoinTable,
 } from 'typeorm';
 import { Comment } from './Comment.entity';
+import { NotificationEntity } from './Notification.entity';
 import { PostEntity } from './post.entity';
 
 type Gender = 'male' | 'female' | 'other';
@@ -73,6 +74,9 @@ export class UserEntity {
 
   @OneToMany(() => Comment, (comment) => comment.owner)
   comments: Comment[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user)
+  notifications: NotificationEntity[];
 
   @CreateDateColumn({ name: 'created_at', nullable: true })
   createdAt: Date;
