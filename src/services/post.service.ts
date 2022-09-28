@@ -2,7 +2,7 @@ import { LessThan } from 'typeorm';
 
 import { AppDataSource } from '../data-source';
 import { HttpError } from '../utils/HttpError';
-import { NewPost, UpdatePost } from '../schemas/post.schema';
+import { GetUserPostsArgs, NewPost, UpdatePost } from '../schemas/post.schema';
 import { PostEntity } from '../entities/post.entity';
 import userService from './user.service';
 
@@ -10,9 +10,6 @@ export const postRepository = AppDataSource.getRepository(PostEntity);
 
 const createPost = async ({ owner, ...postData }: NewPost) => {
   const newPost = postRepository.create(postData);
-
-  const user = await userService.findUser(owner);
-
   newPost.owner = owner as any;
   newPost.comments = [];
   const post = await postRepository.save(newPost);
@@ -22,20 +19,26 @@ const createPost = async ({ owner, ...postData }: NewPost) => {
 
 export const ownerFields = {
   id: true,
-  profileImage: true,
   userName: true,
-  firstName: true,
-  lastName: true,
+  profile: {
+    id: true,
+    firstName: true,
+    lastName: true,
+    profileImage: true,
+  },
 };
 
-const getAllPosts = async (before: Date, limit: number) => {
+const getFeeds = async (before: Date, limit: number) => {
   const posts = await postRepository.find({
-    relations: ['owner', 'likes'],
+    relations: ['owner', 'owner.profile', 'likes', 'likes.profile'],
     select: {
       owner: ownerFields,
       likes: ownerFields,
     },
     where: { updatedAt: LessThan(before) },
+    loadRelationIds: {
+      relations: ['savedBy'],
+    },
     take: limit,
     order: {
       updatedAt: 'DESC',
@@ -43,10 +46,11 @@ const getAllPosts = async (before: Date, limit: number) => {
   });
 
   const first = await getFirstPost();
-  const end = posts[posts.length - 1].id === first.id;
-  const next = end ? '' : posts[posts.length - 1].updatedAt;
+  const hasNext =
+    posts.length === 0 ? false : posts[posts.length - 1].id !== first.id;
+  const next = hasNext ? posts[posts.length - 1].updatedAt : '';
 
-  return { posts, next, end };
+  return { posts, next, hasNext };
 };
 
 const getFirstPost = async () => {
@@ -58,6 +62,55 @@ const getFirstPost = async () => {
   });
 
   return first;
+};
+
+const getUserPosts = async ({
+  offset = 0,
+  limit = 10,
+  group,
+  userId,
+}: GetUserPostsArgs) => {
+  const relations = {
+    saved: 'savedPosts',
+    liked: 'favoritePosts',
+    owned: 'posts',
+  };
+
+  const postsIds = await userService.getUserPostsIds(userId, relations[group]);
+
+  const qb = postRepository
+    .createQueryBuilder('post')
+    .leftJoin('post.likes', 'likedBy')
+    .leftJoin('likedBy.profile', 'likedByProfile')
+    .leftJoin('post.owner', 'owner')
+    .leftJoin('owner.profile', 'profile')
+    .where('post.id IN (:...ids)', {
+      ids: postsIds,
+    })
+    .addSelect([
+      'likedBy.id',
+      'likedByProfile.profileImage',
+      'likedBy.userName',
+      'likedByProfile.firstName',
+      'likedByProfile.lastName',
+      'owner.id',
+      'owner.userName',
+      'profile.profileImage',
+      'profile.firstName',
+      'profile.lastName',
+    ])
+
+    .orderBy('post.updatedAt', 'DESC')
+    .skip(offset)
+    .take(limit);
+
+  if (group !== 'saved') qb.loadAllRelationIds({ relations: ['savedBy'] });
+
+  const [posts, count] = await qb.getManyAndCount();
+  const hasNext = count > posts.length + offset ;
+  const next = hasNext ? offset + limit : '';
+
+  return { posts, next, hasNext };
 };
 
 const updatePost = async ({ content, images, id }: UpdatePost) => {
@@ -82,6 +135,20 @@ const likePost = async (userId: string, postId: string) => {
   return post;
 };
 
+const savePost = async (postId: string, userId: string) => {
+  const post = await findPost(postId);
+
+  if (post.savedBy.some((u) => u.id === userId)) {
+    post.savedBy = post.savedBy.filter((u) => u.id !== userId);
+  } else {
+    post.savedBy.push({ id: userId } as any);
+  }
+
+  await postRepository.save(post);
+
+  return post;
+};
+
 const deletePost = async (postId: string) => {
   const post = await findPost(postId);
 
@@ -91,10 +158,13 @@ const deletePost = async (postId: string) => {
 const findPost = async (id: string) => {
   const post = await postRepository.findOne({
     where: { id },
-    relations: ['owner', 'likes'],
+    relations: ['owner', 'likes', 'savedBy'],
     select: {
       owner: ownerFields,
       likes: ownerFields,
+      savedBy: {
+        id: true,
+      },
     },
   });
 
@@ -104,7 +174,9 @@ const findPost = async (id: string) => {
 
 export default {
   createPost,
-  getAllPosts,
+  getFeeds,
+  getUserPosts,
+  savePost,
   likePost,
   findPost,
   updatePost,

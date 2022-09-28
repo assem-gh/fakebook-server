@@ -7,7 +7,6 @@ import {
 } from '../schemas/post.schema';
 import cloudinaryService from '../services/cloudinary.service';
 import postService from '../services/post.service';
-import userService from '../services/user.service';
 
 export const createPost = async (
   req: Request,
@@ -32,11 +31,15 @@ export const getAll = async (
   next: NextFunction
 ) => {
   try {
-    const { before, take } = GetAllSchema.parse(req.query);
+    const { before, limit, group, offset } = GetAllSchema.parse(req.query);
+    const userId = req.user?.id!;
+    let posts: any;
 
-    const result = await postService.getAllPosts(before, take);
+    if (group === 'feeds')
+      posts = await postService.getFeeds(before || new Date(), limit);
+    else posts = await postService.getUserPosts({ offset, group, userId });
 
-    res.status(200).send(result);
+    res.status(200).send(posts);
   } catch (err) {
     next(err);
   }
@@ -75,6 +78,7 @@ export const likePost = async (
   try {
     const userId = req.user?.id as string;
     const { postId } = req.params;
+
     const post = await postService.likePost(userId, postId);
 
     res.status(200).send(post);
@@ -108,9 +112,8 @@ export const savePost = async (
     const { postId } = req.params;
     const userId = req.user?.id as string;
 
-    const savedPosts = await userService.savePost(postId, userId);
-
-    res.status(200).send(savedPosts);
+    const post = await postService.savePost(postId, userId);
+    res.status(200).send(post);
   } catch (err) {
     next(err);
   }

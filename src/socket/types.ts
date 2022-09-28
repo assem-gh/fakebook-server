@@ -1,22 +1,31 @@
-export enum NotificationType {
+export enum NotificationLabel {
   Like = 'Post/like',
   Comment = 'Post/comment',
 }
 
-export interface NotificationData {
-  relatedEntityId: string;
-  count: number;
-  sender: {
-    id: string;
-    profileImage: string;
-    userName: string;
-  };
+interface Sender {
+  id: string;
+  profileImage: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
 }
 
-export interface CreateNewNotification {
-  type: NotificationType;
-  count: number;
+export interface NotificationData {
+  relatedEntityId: string;
+  count?: number;
+  sender: Sender;
+}
+
+export interface NewNotification {
+  label: NotificationLabel;
   relatedEntityId: string;
   receiver: string;
-  sender: string;
+  sender: Sender;
+  count?: number;
+}
+
+export interface ReceivedData {
+  relatedEntityId: string;
+  label: NotificationLabel;
 }

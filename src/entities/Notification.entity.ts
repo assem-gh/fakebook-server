@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { NotificationData, NotificationType } from '../socket/types';
+import { NotificationData, NotificationLabel } from '../socket/types';
 import { UserEntity } from './user.entity';
 
 @Entity('notification')
@@ -18,11 +18,8 @@ export class NotificationEntity {
   @Column({ name: 'is_read' })
   isRead: boolean = false;
 
-  @Column()
-  description: string;
-
-  @Column({ enum: NotificationType })
-  type: NotificationType;
+  @Column({ enum: NotificationLabel })
+  label: NotificationLabel;
 
   @Column({ type: 'jsonb', nullable: false, default: {} })
   data: NotificationData;

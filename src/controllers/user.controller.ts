@@ -10,6 +10,8 @@ import {
 } from '../schemas/user.schema';
 import mailService, { EmailTemplate } from '../services/mail.service';
 import userService from '../services/user.service';
+import notificationService from '../services/notification.service';
+import postService from '../services/post.service';
 
 export const authenticate = async (
   req: Request,
@@ -17,11 +19,24 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const user = req.user;
+    const user = req.user!;
 
-    const jwtToken = userService.generateToken(user!.id);
+    const jwtToken = userService.generateToken(user.id);
 
-    res.status(200).send({ ...user, jwtToken });
+    const notifications = await notificationService.getAll(user.id);
+    const savedPostsIds = await userService.getUserPostsIds(
+      user.id,
+      'savedPosts'
+    );
+    const feeds = await postService.getFeeds(new Date(), 10);
+
+    res.status(200).send({
+      notifications,
+      user,
+      savedPostsIds,
+      feeds,
+      jwtToken,
+    });
   } catch (err) {
     next(err);
   }
@@ -59,10 +74,20 @@ export const signin = async (
   try {
     const credentials = LoginUserSchema.parse(req.body);
 
-    const user = await userService.login(credentials);
+    const { user, savedPostsIds } = await userService.login(credentials);
+
     const jwtToken = userService.generateToken(user.id);
 
-    res.status(200).send({ ...user, jwtToken });
+    const notifications = await notificationService.getAll(user.id);
+    const feeds = await postService.getFeeds(new Date(), 10);
+
+    res.status(200).send({
+      notifications,
+      user,
+      savedPostsIds,
+      feeds,
+      jwtToken,
+    });
   } catch (err) {
     next(err);
   }

@@ -15,7 +15,7 @@ const postRouter = Router();
 
 postRouter.use('/:postId/comments', commentRouter);
 
-postRouter.get('/', getAll).post('/', verifyToken, createPost);
+postRouter.get('/', verifyToken, getAll).post('/', verifyToken, createPost);
 
 postRouter
   .route('/:postId')
