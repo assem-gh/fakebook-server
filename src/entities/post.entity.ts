@@ -39,7 +39,7 @@ export class PostEntity {
   likes: UserEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.savedPosts)
-  saved: UserEntity[];
+  savedBy: UserEntity[];
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];

@@ -2,7 +2,7 @@ import { Socket } from 'socket.io';
 
 import store from '../store';
 
-const addNewConnection = async (socket: Socket) => {
+const addNewConnection =  (socket: Socket) => {
   store.addNewSocket({
     socketId: socket.id,
     userId: socket.user?.id,

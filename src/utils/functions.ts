@@ -5,4 +5,8 @@ const genRandom = (num: number): string => {
   return rnd;
 };
 
-export default { genRandom };
+const toNumber = (val: any) => {
+  if (/^\d+$/.test(val)) return Number(val);
+};
+
+export default { genRandom, toNumber };
