@@ -5,6 +5,7 @@ import { db } from './config';
 import { Comment } from './entities/Comment.entity';
 import { NotificationEntity } from './entities/Notification.entity';
 import { PostEntity } from './entities/post.entity';
+import { ProfileEntity } from './entities/profile.entity';
 import { UserEntity } from './entities/user.entity';
 
 export const AppDataSource = new DataSource({
@@ -16,7 +17,13 @@ export const AppDataSource = new DataSource({
   database: db.NAME,
   synchronize: false,
   logging: false,
-  entities: [UserEntity, PostEntity, Comment, NotificationEntity],
+  entities: [
+    UserEntity,
+    PostEntity,
+    Comment,
+    NotificationEntity,
+    ProfileEntity,
+  ],
   migrations: [process.cwd() + '/src/migrations/*.ts'],
   subscribers: [],
 });

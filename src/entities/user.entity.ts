@@ -8,12 +8,13 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Comment } from './Comment.entity';
 import { NotificationEntity } from './Notification.entity';
 import { PostEntity } from './post.entity';
-
-type Gender = 'male' | 'female' | 'other';
+import { ProfileEntity } from './profile.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -34,30 +35,9 @@ export class UserEntity {
   @Column({})
   password: string;
 
-  @Column({ name: 'first_name' })
-  firstName: string;
-
-  @Column({ name: 'last_name' })
-  lastName: string;
-
-  @Column({
-    name: 'profile_image',
-    default:
-      'https://villagesonmacarthur.com/wp-content/uploads/2020/12/Blank-Avatar.png',
-  })
-  profileImage: string;
-
-  @Column()
-  gender: Gender;
-
-  @Column({ type: 'boolean', default: false })
-  verified: boolean;
-
-  @Column({ type: 'varchar', nullable: true })
-  bio: string;
-
-  @Column({ type: 'date' })
-  birthday: Date;
+  @OneToOne(() => ProfileEntity, (profile) => profile.user)
+  @JoinColumn()
+  profile: ProfileEntity;
 
   @OneToMany(() => PostEntity, (post) => post.owner)
   posts: PostEntity[];
@@ -65,10 +45,10 @@ export class UserEntity {
   @ManyToMany(() => PostEntity, (post) => post.likes)
   favoritePosts: PostEntity[];
 
-  @ManyToMany(() => PostEntity, (post) => post.saved)
+  @ManyToMany(() => PostEntity, (post) => post.savedBy)
   @JoinTable({
     joinColumn: { name: 'saved_posts', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'saved', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'saved_by', referencedColumnName: 'id' },
   })
   savedPosts: PostEntity[];
 

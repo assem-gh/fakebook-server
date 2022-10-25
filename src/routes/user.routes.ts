@@ -1,20 +1,29 @@
-import { Router } from 'express';
+import {Router} from 'express';
 import {
-  signup,
-  signin,
-  forgotPassword,
-  resetPassword,
-  authenticate,
+    authenticate,
+    forgotPassword,
+    resetPassword,
+    signin,
+    signup,
+    updateProfile,
+    updateProfileImages,
 } from '../controllers/user.controller';
-import { verifyToken } from '../middlewares/VerifyToken';
+import {verifyToken} from '../middlewares/VerifyToken';
 
 const userRouter = Router();
+const profileRouter = Router({mergeParams: true})
+
+userRouter.use('/profile/:profileId', profileRouter)
 
 userRouter
-  .post('/auth', verifyToken, authenticate)
-  .post('/signup', signup)
-  .post('/signin', signin)
-  .post('/forgot-password', forgotPassword)
-  .post('/reset-password', resetPassword);
+    .get('/auth', verifyToken, authenticate)
+    .post('/signup', signup)
+    .post('/signin', signin)
+    .post('/forgot-password', forgotPassword)
+    .post('/reset-password', resetPassword);
+
+profileRouter
+    .put('/', verifyToken, updateProfile)
+    .post('/images', verifyToken, updateProfileImages)
 
 export default userRouter;

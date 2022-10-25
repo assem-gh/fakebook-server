@@ -2,7 +2,16 @@ import { UserEntity } from './src/entities/user.entity';
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user?: Omit<UserEntity, 'password'>;
+    user?: {
+      id: string;
+      userName: string;
+      email: string;
+      profile: {
+        firstName: string;
+        lastName: string;
+        profileImage: string;
+      };
+    };
   }
 }
 
@@ -11,8 +20,11 @@ declare module 'socket.io' {
     user?: {
       id: string;
       userName: string;
-      firstName: string;
-      lastName: string;
+      profile: {
+        firstName: string;
+        lastName: string;
+        profileImage: string;
+      };
     };
   }
 }

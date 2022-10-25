@@ -12,14 +12,14 @@ export const verifyToken = async (
 ) => {
   try {
     const token = req.headers['authorization']?.replace('Bearer ', '');
-    if (!token) throw new HttpError(401, 'Unauthorized, Access is denied ');
+    if (!token) throw (new HttpError(401, 'Unauthorized, Access is denied '));
 
-    const { id } = jwt.verify(token, serverConfig.JWT_SECRET) as { id: string };
-    const { password, ...verifiedUser } = await userService.findUser(id);
-
-    req.user = verifiedUser;
+    const decoded = jwt.verify(token , serverConfig.JWT_SECRET) as jwt.JwtPayload
+    const user = await userService.findUser(decoded.id);
+    const { id, userName, email, profile } = user;
+    req.user = { id, userName, email, profile };
     next();
   } catch (err) {
-    next(new HttpError(401, 'Unauthorized, Access is denied'));
+    next(err);
   }
 };

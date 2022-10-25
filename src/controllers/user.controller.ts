@@ -1,17 +1,20 @@
-import { NextFunction, Request, Response } from 'express';
-import { TokenExpiredError } from 'jsonwebtoken';
+import {NextFunction, Request, Response} from 'express';
+import {TokenExpiredError} from 'jsonwebtoken';
 
-import { HttpError } from '../utils/HttpError';
+import {HttpError} from '../utils/HttpError';
 import {
-  NewUserSchema,
-  LoginUserSchema,
   ForgotPasswordSchema,
-  ResetPasswordSchema,
+  LoginUserSchema,
+  NewUserSchema,
+  ResetPasswordSchema, UpdateImage,
+  UpdateProfileSchema,
 } from '../schemas/user.schema';
-import mailService, { EmailTemplate } from '../services/mail.service';
+import mailService, {EmailTemplate} from '../services/mail.service';
 import userService from '../services/user.service';
 import notificationService from '../services/notification.service';
 import postService from '../services/post.service';
+import cloudinaryService from "../services/cloudinary.service";
+import {UploadedFile} from "express-fileupload";
 
 export const authenticate = async (
   req: Request,
@@ -55,9 +58,9 @@ export const signup = async (
     const url = userService.generateVerificationUrl(newUser.id);
 
     await mailService.sendEmail(
-      EmailTemplate.ACCOUNT_VERIFICATION,
-      newUser.email,
-      url
+       EmailTemplate.ACCOUNT_VERIFICATION,
+       newUserData.email,
+       url
     );
 
     res.status(200).send({ ...newUser, jwtToken });
@@ -127,3 +130,62 @@ export const resetPassword = async (
     else next(err);
   }
 };
+
+export const updateProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { profileId } = req.params;
+    const { email, ...newData } = UpdateProfileSchema.parse(req.body);
+
+    const profile = await userService.updateProfile(newData, profileId, email);
+
+    res.status(200).send(profile);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateProfileImages = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+  try {
+    const userId=req.user?.id as string
+    const { profileId } = req.params;
+    const imageType=UpdateImage.parse(req.query.type);
+
+    const imageLink = await cloudinaryService.uploadImage(req.files?.image as UploadedFile, userId, imageType)
+
+    await userService.updateProfile({[imageType]:imageLink},profileId)
+
+    res.status(200).send({[imageType]:imageLink});
+  } catch (err) {
+    next(err);
+  }
+};
+
+// export const getUserPosts = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { offset, limit, queryType } = GetUserPostsSchema.parse(req.query);
+//     const { userId } = req.params;
+
+//     const result = await postService.getUserPosts({
+//       offset,
+//       limit,
+//       queryType,
+//       userId,
+//     });
+//
+//     res.status(200).send(result);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
